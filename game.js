@@ -49,7 +49,6 @@
   const MUTE_KEY = 'bjMuted';
   const CHARACTER_KEY = 'bjFace';
   const MUTE_BTN = { x: LW - 46, y: 10, w: 36, h: 36 };
-  const BACK_BTN = { x: 10, y: 10, w: 36, h: 36 };
   const GAMEOVER_CARD = { x: 40, y: 160, w: 320, h: 258 };
   const GAMEOVER_CHIP1 = { x: 60, y: 252, w: 132, h: 78 };
   const GAMEOVER_CHIP2 = { x: 208, y: 252, w: 132, h: 78 };
@@ -67,8 +66,7 @@
   const FONT_BODY = '"Inter", system-ui, sans-serif';
 
   // ---- Home screen layout (character select + play, all on one screen) ----
-  const PLAY_BTN = { x: 22, y: 572, w: 356, h: 64 };
-  const HOWTO_BTN = { x: 22, y: 646, w: 356, h: 40 };
+  const PLAY_BTN = { x: 22, y: 596, w: 356, h: 64 };
 
   // ---- Procedurally generated background music (no audio files) ----
   // Same looping rhythmic phrase every run, transposed onto a maqam (Arabic
@@ -236,7 +234,7 @@
   // has no src or hasn't finished loading yet).
   const FACE_FALLBACK_COLORS = ['#ff6ec7', '#7df9ff', '#c77dff', '#ffd700', '#ff9f6e'];
 
-  let state = 'home'; // home | playing | gameover | howto
+  let state = 'home'; // home | playing | gameover
   let selectedFace;
   let player, pipes, score, best, spawnTimer, groundOffset, skyScrollX, skyScrollXFar, lastTime;
   let speedRamp, hardModeTriggered;
@@ -244,8 +242,6 @@
   const HARD_MODE_BOOST = 0.35; // +35% speed once the ramp is fully eased in
   let flapAnim = 0;
   let popups; // floating "+N" text (unused for now, kept for future bonus effects)
-  let faqOpenIndex = null;
-  let faqRects = [];
   let deathGlitter = [];
   let joke = '';
 
@@ -320,14 +316,6 @@
     if (state === 'home') {
       const buttons = faceCardRects.map((rect, i) => ({ rect, onTap: () => selectFace(i) }));
       buttons.push({ rect: PLAY_BTN, onTap: () => startRun() });
-      buttons.push({ rect: HOWTO_BTN, onTap: () => { state = 'howto'; } });
-      return buttons;
-    }
-    if (state === 'howto') {
-      const buttons = [{ rect: BACK_BTN, onTap: () => { state = 'home'; } }];
-      faqRects.forEach((rect, i) => {
-        buttons.push({ rect, onTap: () => { faqOpenIndex = faqOpenIndex === i ? null : i; } });
-      });
       return buttons;
     }
     if (state === 'gameover') {
@@ -740,24 +728,6 @@
     ctx.restore();
   }
 
-  function wrapText(text, maxWidth, font) {
-    ctx.font = font;
-    const words = text.split(' ');
-    const lines = [];
-    let line = '';
-    for (const word of words) {
-      const test = line ? line + ' ' + word : word;
-      if (line && ctx.measureText(test).width > maxWidth) {
-        lines.push(line);
-        line = word;
-      } else {
-        line = test;
-      }
-    }
-    if (line) lines.push(line);
-    return lines;
-  }
-
   function drawOutlinedText(text, x, y, size, color) {
     ctx.font = `${size}px ${FONT_HEAD}`;
     ctx.textAlign = 'center';
@@ -825,32 +795,6 @@
     ctx.fillStyle = BJ_ACCENT;
     ctx.fill();
     drawText('Play', LW / 2, PLAY_BTN.y + PLAY_BTN.h / 2, 20, BJ_BG, '700');
-
-    roundRectPath(HOWTO_BTN.x, HOWTO_BTN.y, HOWTO_BTN.w, HOWTO_BTN.h, 999);
-    ctx.fillStyle = BJ_SURFACE;
-    ctx.fill();
-    drawTextAligned('How to play', LW / 2, HOWTO_BTN.y + HOWTO_BTN.h / 2, 13, BJ_TEXT, '600', 'center');
-  }
-
-  function drawBackButton() {
-    const { x, y, w, h } = BACK_BTN;
-    const cx = x + w / 2, cy = y + h / 2;
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, w / 2, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(cx + 5, cy - 8);
-    ctx.lineTo(cx - 5, cy);
-    ctx.lineTo(cx + 5, cy + 8);
-    ctx.stroke();
-    ctx.restore();
   }
 
   // Death effect: a burst of glitter scattered across the whole screen
@@ -911,56 +855,6 @@
     ctx.fillStyle = BJ_ACCENT;
     ctx.fill();
     drawText('Share Score', x + w / 2, y + h / 2, 14, BJ_BG, '700');
-  }
-
-  // ---- How to play: a single-open accordion of real Q&A, grounded in the
-  // actual mechanics rather than placeholders ----
-  const FAQ = [
-    {
-      q: 'How do I play?',
-      a: 'Tap anywhere on the screen to jump. Keep tapping to dodge the spikes.',
-    },
-    {
-      q: 'How do I pick my character?',
-      a: 'On the home screen, tap one of the 5 faces to choose who you play as.',
-    },
-    {
-      q: 'Can I share my score?',
-      a: 'When a run ends, tap "Share Score" to create an image of your result and share it with friends.',
-    },
-  ];
-
-  function drawHowToScreen() {
-    drawOutlinedText('How to Play', LW / 2, 56, 26, BJ_TEXT);
-
-    faqRects = [];
-    let y = 92;
-    const w = 352, x = LW / 2 - w / 2, textW = w - 36;
-    FAQ.forEach((item, i) => {
-      const open = faqOpenIndex === i;
-      const qh = 52;
-      faqRects.push({ x, y, w, h: qh });
-
-      const lines = open ? wrapText(item.a, textW, `500 13px ${FONT_BODY}`) : [];
-      const answerH = lines.length * 18;
-      const totalH = open ? qh + 16 + answerH : qh;
-      roundRectPath(x, y, w, totalH, 20);
-      ctx.fillStyle = BJ_SURFACE;
-      ctx.fill();
-
-      drawTextAligned(item.q, x + 18, y + qh / 2, 14.5, BJ_TEXT, '700', 'left');
-      drawTextAligned(open ? '−' : '+', x + w - 24, y + qh / 2, 20, BJ_ACCENT_2, '700', 'center');
-
-      if (open) {
-        let ty = y + qh + 16;
-        lines.forEach(line => {
-          drawTextAligned(line, x + 18, ty, 13, 'rgba(253,246,255,0.75)', '500', 'left');
-          ty += 18;
-        });
-      }
-
-      y += totalH + 10;
-    });
   }
 
   // Renders a standalone score-card image (independent canvas, not the game's)
@@ -1129,15 +1023,10 @@
   // gameplay (and its game-over overlay) keeps the vivid sunset-into-night
   // sky and skyline.
   function draw() {
-    if (state === 'home' || state === 'howto') {
+    if (state === 'home') {
       ctx.fillStyle = BJ_BG;
       ctx.fillRect(0, 0, LW, LH);
-      if (state === 'home') {
-        drawHomeScreen();
-      } else if (state === 'howto') {
-        drawHowToScreen();
-        drawBackButton();
-      }
+      drawHomeScreen();
     } else {
       drawSky();
       drawHorizon();
