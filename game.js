@@ -215,14 +215,13 @@
     };
   });
   // Hosted off-repo (not committed to this repo) on catbox.moe, so photos
-  // aren't sitting in git history. TODO: paste each real catbox.moe URL in
-  // once photos are received from the user.
+  // aren't sitting in git history.
   const FACE_URLS = [
-    '', // TODO: player 1
-    '', // TODO: player 2
-    '', // TODO: player 3
-    '', // TODO: player 4
-    '', // TODO: player 5
+    'https://files.catbox.moe/0u0zyr.jpg',
+    'https://files.catbox.moe/slm9e9.jpg',
+    'https://files.catbox.moe/csjy5d.jpg',
+    'https://files.catbox.moe/950g0s.jpg',
+    'https://files.catbox.moe/u65pcn.jpg',
   ];
   const FACE_IMAGES = FACE_URLS.map(url => {
     const img = new Image();
