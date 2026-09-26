@@ -1,0 +1,41 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #170b2e;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#game {
+  display: block;
+  touch-action: none;
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Bakhos Jump design tokens: night party palette ---- */
+:root {
+  --bj-bg: #1b1030;
+  --bj-surface: #2e2150;
+  --bj-text: #fdf6ff;
+  --bj-accent: #ff6ec7;
+  --bj-accent-dark: #c73fa0;
+  --bj-accent-2: #7df9ff;
+  --bj-font-head: "Baloo 2", sans-serif;
+  --bj-font-body: "Inter", system-ui, sans-serif;
+}
