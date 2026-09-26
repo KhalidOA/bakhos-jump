@@ -218,8 +218,8 @@
   // aren't sitting in git history.
   const FACE_URLS = [
     'https://files.catbox.moe/0u0zyr.jpg',
-    'https://files.catbox.moe/slm9e9.jpg',
     'https://files.catbox.moe/csjy5d.jpg',
+    'https://files.catbox.moe/slm9e9.jpg',
     'https://files.catbox.moe/950g0s.jpg',
     'https://files.catbox.moe/u65pcn.jpg',
   ];
